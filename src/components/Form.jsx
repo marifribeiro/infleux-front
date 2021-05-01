@@ -2,24 +2,75 @@ import React, { useEffect, useState } from 'react';
 import { useFormik, Field, FormikProvider } from 'formik';
 import * as yup from 'yup';
 import { createUseStyles } from 'react-jss';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import { Autocomplete, Alert } from '@material-ui/lab';
 import {
-  FormControlLabel, Radio, FormControl, FormLabel, FormHelperText,
+  Box,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  TextField,
+  Button,
 } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
 import { RadioGroup } from 'formik-material-ui';
+import TextInput from 'components/TextInput';
 import getAllCountries from 'services/countries';
 import createCampaign from 'services/campaigns';
 import { currencyMask, removeCurrencyMask } from 'utils/currencyMask';
+import colors from 'styles/colors';
+
+const StyledTextInput = withStyles({
+  root: {
+    '& label.Mui-focused': {
+      color: colors.purple,
+    },
+    '& .MuiInput-underline:after': {
+      borderBottomColor: colors.purple,
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'red',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: colors.purple,
+      },
+    },
+  },
+})(TextField);
 
 const useStyles = createUseStyles({
+  root: {
+    margin: '10px 0',
+  },
   form: {
     overflow: 'none',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    height: '100%',
+    textAlign: 'center',
+    '& h1': {
+      color: colors.pink,
+    },
+    '& h3': {
+      marginTop: '15px',
+    },
+  },
+  fieldContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  field: {
+    width: '100%',
+  },
+  label: {
+    textAlign: 'left',
   },
 });
 
@@ -35,25 +86,28 @@ const campaignSchema = yup.object({
   name: yup.string().required('You must give your campaign a name'),
   description: yup.string(),
   conversionType: yup.string().required('You must select at least one conversion type'),
-  country: yup.string().required(),
+  country: yup.string().required().nullable(),
   bid: yup.string().required('You must type a bid'),
 });
 
 const Form = () => {
   const [countries, setCountries] = useState([]);
-  const [error, setError] = useState([]);
+  const [toast, setToast] = useState({});
   const classes = useStyles();
 
   useEffect(() => {
     getAllCountries().then(
       (res) => {
-        const justCountryNames = [''];
-        res.data.data.map((item) => justCountryNames.push(item.name));
-        setCountries(justCountryNames);
+        setCountries(res.data.data.map((item) => item.name));
       },
-      (err) => setError(err),
     );
   }, []);
+
+  const showToast = (severity, message) => {
+    const delay = 5000;
+    setToast({ severity, message });
+    setTimeout(setToast, delay);
+  };
 
   const formatCampaign = (campaign) => ({
     name: campaign.name,
@@ -63,95 +117,103 @@ const Form = () => {
     bid: removeCurrencyMask(campaign.bid),
   });
 
-  const sendCampaign = (campaign) => {
-    createCampaign(campaign).then(
-      (res) => console.log(res),
-      (err) => console.log(err),
-    );
-  };
-
   const formik = useFormik({
     initialValues,
     validationSchema: campaignSchema,
-    onSubmit: (values) => {
+    onSubmit: (values, { setSubmitting, resetForm }) => {
       const newCampaign = formatCampaign(values);
-      sendCampaign(newCampaign);
+      createCampaign(newCampaign).then(
+        () => {
+          showToast('success', 'Campaign created successfully!');
+          setSubmitting(false);
+          resetForm();
+        },
+        () => {
+          showToast('error', 'Something went wrong :( please try again');
+        },
+      );
     },
   });
 
   return (
     <FormikProvider value={formik}>
+      {toast.severity
+      && (
+      <Alert variant="filled" severity={toast.severity}>
+        {toast.message}
+      </Alert>
+      )}
       <form
         onSubmit={formik.handleSubmit}
         className={classes.form}
       >
-        <h1>Infleux</h1>
-        <h3>Add a new campaign</h3>
-        <TextField
-          name="name"
-          id="name"
-          label="Campaign name"
-          variant="outlined"
-          value={formik.values.name}
-          onChange={formik.handleChange}
-          error={formik.touched.name && formik.errors.name}
-          helperText={formik.touched.name && formik.errors.name}
-        />
-        <TextField
-          name="description"
-          id="description"
-          label="Campaign description"
-          variant="outlined"
-          multiline
-          rows={4}
-          value={formik.values.description}
-          onChange={formik.handleChange}
-          error={formik.touched.description && formik.errors.description}
-          helperText={formik.touched.description && formik.errors.description}
-        />
-        <FormControl
-          name="conversionType"
-          error={formik.touched.conversionType && formik.errors.conversionType}
-        >
-          <FormLabel component="legend">Choose a conversion type:</FormLabel>
-          <Field
-            component={RadioGroup}
-            name="conversionType"
-            error={formik.touched.conversionType && formik.errors.conversionType}
-          >
-            <FormControlLabel
-              value="CPM"
-              control={(<Radio />)}
-              label="CPM - Cost per mille impressions"
-            />
-            <FormControlLabel
-              value="CPC"
-              control={(<Radio />)}
-              label="CPC - Cost per clicks"
-            />
-            <FormControlLabel
-              value="CPI"
-              control={(<Radio />)}
-              label="CPI - Cost per install"
-            />
-          </Field>
-          {
+        <div className={classes.title}>
+          <h1>Infleux</h1>
+          <h3>Create a new campaign</h3>
+        </div>
+        <div className={classes.fieldContainer}>
+          <TextInput
+            className={classes.root}
+            name="name"
+            label="Campaign name"
+            value={formik.values.name}
+            error={formik.touched.name && formik.errors.name}
+            helperText={formik.touched.name && formik.errors.name}
+          />
+          <TextInput
+            name="description"
+            label="Campaign description"
+            value={formik.values.description}
+            error={formik.touched.description && formik.errors.description}
+            helperText={formik.touched.description && formik.errors.description}
+            rows={3}
+          />
+          <Box m={1}>
+            <FormControl
+              className={classes.field}
+              name="conversionType"
+              error={formik.touched.conversionType && formik.errors.conversionType}
+            >
+              <FormLabel color="secondary" classes={classes.label}>Choose a conversion type:</FormLabel>
+              <Field
+                component={RadioGroup}
+                name="conversionType"
+                error={formik.touched.conversionType && formik.errors.conversionType}
+              >
+                <FormControlLabel
+                  value="CPM"
+                  control={(<Radio />)}
+                  label="CPM - Cost per mille impressions"
+                />
+                <FormControlLabel
+                  value="CPC"
+                  control={(<Radio />)}
+                  label="CPC - Cost per clicks"
+                />
+                <FormControlLabel
+                  value="CPI"
+                  control={(<Radio />)}
+                  label="CPI - Cost per install"
+                />
+              </Field>
+              {
             formik.touched.conversionType && formik.errors.conversionType && (
             <FormHelperText>You must select at least one conversion type</FormHelperText>
             )
           }
-        </FormControl>
-        {
-          countries ? (
+            </FormControl>
+          </Box>
+          { countries && (
             <Autocomplete
+              className={classes.field}
               name="country"
               id="country"
               value={formik.values.country}
               renderInput={(params) => (
-                <TextField
+                <StyledTextInput
+                  className={classes.field}
                   {...params}
                   label="Country"
-                  variant="outlined"
                   error={formik.errors.country}
                   helperText={formik.errors.country}
                 />
@@ -159,25 +221,30 @@ const Form = () => {
               options={countries}
               getOptionLabel={(option) => (option || '')}
               getOptionSelected={(option, value) => option === value}
-              style={{ width: 230 }}
+              style={{ width: '100%' }}
               onChange={(e, value) => formik.setFieldValue('country', value)}
             />
-          ) : (<div>{error}</div>)
-        }
-
-        <TextField
-          name="bid"
-          id="bid"
-          label="Bid price (USD)"
-          variant="outlined"
-          value={formik.values.bid}
-          onChange={(e) => formik.setFieldValue('bid', currencyMask(e.target.value))}
-          error={formik.touched.bid && formik.errors.bid}
-          helperText={formik.touched.bid && formik.errors.bid}
-        />
-        <Button type="submit" variant="contained" color="secondary" onClick={formik.handleSubmit}>
-          Submit
-        </Button>
+          ) }
+          <TextInput
+            name="bid"
+            label="Bid price (USD)"
+            value={formik.values.bid}
+            onChange={(e) => formik.setFieldValue('bid', currencyMask(e.target.value))}
+            error={formik.touched.bid && formik.errors.bid}
+            helperText={formik.touched.bid && formik.errors.bid}
+          />
+          <Box m={1}>
+            <Button
+              className={classes.button}
+              type="submit"
+              variant="contained"
+              color="secondary"
+              onClick={formik.handleSubmit}
+            >
+              Submit
+            </Button>
+          </Box>
+        </div>
       </form>
     </FormikProvider>
   );
