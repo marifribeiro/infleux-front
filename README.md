@@ -1,70 +1,31 @@
-# Getting Started with Create React App
+# Infleux Test Front
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Description
 
-## Available Scripts
+This is a Front end application crated for Infleux's test, according to [these instructions](https://docs.google.com/document/d/1U5sSpNvm6nVlphHklTCs5rM2GTg2MAZ5dA1JgaxNM-U/edit#).
 
-In the project directory, you can run:
+The main goal of this single page application is for Advertises to create new campaigns through a form interface, which you can access [here](https://infleux-front.herokuapp.com/)
 
-### `npm start`
+This was developed using ReactJS, MaterialUI, JSS and deployed at Heroku.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+When filling the form correctly (without any errors in the fields), a new campaign will be submitted to this endpoit of the [back-end application](https://github.com/maryplank/infleux-api):
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+`POST https://infleux-api.herokuapp.com/api/v1/campaigns`
 
-### `npm test`
+```json
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  {
+    "name": "Vivara",
+    "description": "Campanha para nova linha de berlocs da Disney",
+    "conversionType": "CPC",
+    "country": "brazil",
+    "bid": 1.65
+  }
+```
+All fields are mandatory, except for description. So if you try to **submit** blank fields, you will see some errors on the fields.
 
-### `npm run build`
+You will see a green toaster on the screen if the request was successfull, and a red one if something went wrong (you might experience an error at the first try, but this is because the back-end application is deployed at heroku and it gets lazy somtimes. Just try again!)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To improve usability and standardization in the database, I used [this API](https://documenter.getpostman.com/view/1134062/T1LJjU52?version=latest) to get all countries list, and formatted them before sending so all countries will be lowercased and kebab-case, so you can find the best campaign for each country easier.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+See the[ back-end application documentation](https://github.com/maryplank/infleux-api) for the `GET` routes you can consult to check your new camapaign :)
