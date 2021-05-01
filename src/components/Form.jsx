@@ -92,7 +92,7 @@ const campaignSchema = yup.object({
 
 const Form = () => {
   const [countries, setCountries] = useState([]);
-  const [toast, setToast] = useState({});
+  const [toast, setToast] = useState({ severity: null, message: null });
   const classes = useStyles();
 
   useEffect(() => {
@@ -106,7 +106,7 @@ const Form = () => {
   const showToast = (severity, message) => {
     const delay = 5000;
     setToast({ severity, message });
-    setTimeout(setToast, delay);
+    setTimeout(() => setToast({ severity: null, message: null }), delay);
   };
 
   const formatCampaign = (campaign) => ({
