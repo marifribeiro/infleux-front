@@ -59,7 +59,7 @@ const Form = () => {
     name: campaign.name,
     description: campaign.description,
     conversionType: campaign.conversionType,
-    country: campaign.country.name.toLowerCase().replace(' ', '-'),
+    country: campaign.country.toLowerCase().replace(' ', '-'),
     bid: removeCurrencyMask(campaign.bid),
   });
 
@@ -74,7 +74,6 @@ const Form = () => {
     initialValues,
     validationSchema: campaignSchema,
     onSubmit: (values) => {
-      console.log(values);
       const newCampaign = formatCampaign(values);
       sendCampaign(newCampaign);
     },
