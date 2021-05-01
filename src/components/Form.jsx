@@ -27,7 +27,7 @@ const initialValues = {
   name: '',
   description: '',
   conversionType: '',
-  country: { name: '', Iso2: '', Iso3: '' },
+  country: '',
   bid: '',
 };
 
@@ -35,22 +35,21 @@ const campaignSchema = yup.object({
   name: yup.string().required('You must give your campaign a name'),
   description: yup.string(),
   conversionType: yup.string().required('You must select at least one conversion type'),
-  country: yup.object({
-    name: yup.string(), Iso2: yup.string(), Iso3: yup.string(),
-  }).required().nullable(),
+  country: yup.string().required(),
   bid: yup.string().required('You must type a bid'),
 });
 
 const Form = () => {
   const [countries, setCountries] = useState([]);
   const [error, setError] = useState([]);
-  const [radioHelperText, setRadioHelperText] = useState('');
   const classes = useStyles();
 
   useEffect(() => {
     getAllCountries().then(
       (res) => {
-        setCountries(res.data.data);
+        const justCountryNames = [''];
+        res.data.data.map((item) => justCountryNames.push(item.name));
+        setCountries(justCountryNames);
       },
       (err) => setError(err),
     );
@@ -74,11 +73,8 @@ const Form = () => {
   const formik = useFormik({
     initialValues,
     validationSchema: campaignSchema,
-    onSubmit: (values, errors) => {
-      console.log(errors);
-      if (formik.errors.conversionType) {
-        setRadioHelperText('You must choose a country to advertise your campaign');
-      }
+    onSubmit: (values) => {
+      console.log(values);
       const newCampaign = formatCampaign(values);
       sendCampaign(newCampaign);
     },
@@ -140,7 +136,11 @@ const Form = () => {
               label="CPI - Cost per install"
             />
           </Field>
-          <FormHelperText>{radioHelperText}</FormHelperText>
+          {
+            formik.touched.conversionType && formik.errors.conversionType && (
+            <FormHelperText>You must select at least one conversion type</FormHelperText>
+            )
+          }
         </FormControl>
         {
           countries ? (
@@ -158,8 +158,8 @@ const Form = () => {
                 />
               )}
               options={countries}
-              getOptionLabel={(option) => (option ? option.name : '')}
-              getOptionSelected={(option, value) => option.name === value.name}
+              getOptionLabel={(option) => (option || '')}
+              getOptionSelected={(option, value) => option === value}
               style={{ width: 230 }}
               onChange={(e, value) => formik.setFieldValue('country', value)}
             />
