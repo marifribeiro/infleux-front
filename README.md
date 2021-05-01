@@ -29,3 +29,21 @@ You will see a green toaster on the screen if the request was successfull, and a
 To improve usability and standardization in the database, I used [this API](https://documenter.getpostman.com/view/1134062/T1LJjU52?version=latest) to get all countries list, and formatted them before sending so all countries will be lowercased and kebab-case, so you can find the best campaign for each country easier.
 
 See the[ back-end application documentation](https://github.com/maryplank/infleux-api) for the `GET` routes you can consult to check your new camapaign :)
+
+## Run locally
+
+## Run locally
+
+Clone this repo: 
+
+`https://github.com/maryplank/infleux-front.git`
+
+
+Inside the project's directory, install the dependecies:
+
+`npm install`
+
+
+To run locally in development mode:
+
+`npm start`
